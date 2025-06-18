@@ -1,16 +1,18 @@
+import { getRecentDate } from '../lib/time';
 import type { Group } from '../types/group';
 import type { Hangout } from '../types/hangout';
 import type { Person } from '../types/person';
 import type { Target } from '../types/target';
-import type { DataLayer } from './data_layer';
+import { DataLayer } from './data_layer';
 
-export class DebugData implements DataLayer {
+export class DebugData extends DataLayer {
   private people: Person[];
   private groups: Group[];
   private targets: Target[];
   private hangouts: Hangout[];
 
   constructor() {
+    super();
     this.people = [
       {
         id: 'p1',
@@ -34,12 +36,12 @@ export class DebugData implements DataLayer {
       {
         id: 'g1',
         name: 'Jim & Sarah',
-        members: ['p1', 'p2'],
+        members: [this.people[0], this.people[1]],
       },
       {
         id: 'g2',
         name: 'John & Quesadilla',
-        members: ['p3', 'p4'],
+        members: [this.people[2], this.people[3]],
       },
     ];
 
@@ -47,24 +49,57 @@ export class DebugData implements DataLayer {
       {
         id: 't1',
         type: 'group',
-        target: 'g1',
-        name: 'Jim & Sarah',
+        target: this.groups[0],
       },
       {
         id: 't2',
         type: 'group',
-        target: 'g2',
-        name: 'John & Quesadilla',
+        target: this.groups[1],
       },
       {
         id: 't3',
         type: 'person',
-        target: 'p1',
-        name: 'Jim',
+        target: this.people[0],
       },
     ];
 
-    this.hangouts = [];
+    this.hangouts = [
+      {
+        id: 'h1',
+        target: this.targets[0],
+        time: getRecentDate(new Date(), 15),
+      },
+      {
+        id: 'h2',
+        target: this.targets[1],
+        time: getRecentDate(new Date(), -15),
+      },
+      {
+        id: 'h3',
+        target: this.targets[1],
+        time: getRecentDate(new Date(), -25),
+      },
+      {
+        id: 'h4',
+        target: this.targets[2],
+        time: getRecentDate(new Date(), 12),
+      },
+      {
+        id: 'h5',
+        target: this.targets[2],
+        time: getRecentDate(new Date(), -15),
+      },
+      {
+        id: 'h6',
+        target: this.targets[2],
+        time: getRecentDate(new Date(), -25),
+      },
+      {
+        id: 'h7',
+        target: this.targets[2],
+        time: getRecentDate(new Date(), 21),
+      },
+    ];
   }
 
   getPeople() {

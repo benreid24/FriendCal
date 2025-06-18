@@ -1,13 +1,19 @@
-import { DebugData } from './data/debug_data';
 import { TargetTable } from './components/TargetTable';
-
-const dataLayer = new DebugData();
+import {useSetDataLayer} from './hooks/useDataLayer';
+import {useEffect} from 'react';
+import {DebugData} from './data/debug_data';
 
 function App() {
+    const setDataLayer = useSetDataLayer();
+    
+    useEffect(() => {
+        setDataLayer(new DebugData());
+    }, []);
+
   return (
     <>
       <div className="app">
-        <TargetTable targets={dataLayer.getTargets()} />
+        <TargetTable />
       </div>
       <style jsx>{`
         .app {

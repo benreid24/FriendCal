@@ -1,5 +1,7 @@
+import type {Target} from "./target";
+
 export interface Hangout {
   id: string;
-  target: string;
-  time: number;
+  target: Target;
+  time: Date;
 }
