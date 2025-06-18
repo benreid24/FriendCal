@@ -1,57 +1,235 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useDataLayer } from '../hooks/useDataLayer';
-import { getRecentDate } from '../lib/time';
+import { getRecentDate, trimTimeFromDate } from '../lib/time';
 import type { Target } from '../types/target';
+import type { DataLayer } from '../data/data_layer';
+import { UpArrow } from './icons/UpArrow';
+import { DownArrow } from './icons/DownArrow';
+import { ButtonGhost } from './ButtonGhost';
 
 export interface Props {}
 
-function TargetRow({ target }: { target: Target }) {
-  const dataLayer = useDataLayer();
+interface RowData {
+  id: string;
+  name: string;
+  prevDate: Date | undefined;
+  nextDate: Date | undefined;
+  recentHangs: number;
+}
 
-  const lastHang = useMemo(() => dataLayer.getLastHangout(target.id), [dataLayer, target]);
-  const nextHang = useMemo(() => dataLayer.getNextHangout(target.id), [dataLayer, target]);
+type ColumnKey = keyof Omit<RowData, 'id'>;
+
+interface SortedColumn {
+  key: ColumnKey;
+  ascending: boolean;
+}
+
+function makeData(target: Target, dataLayer: DataLayer): RowData {
+  const lastHang = dataLayer.getLastHangout(target.id);
+  const nextHang = dataLayer.getNextHangout(target.id);
   const recentThresh = getRecentDate().getTime();
-  const recent = useMemo(
-    () =>
-      dataLayer.getPriorHangoutsForTarget(target.id).filter(h => h.time.getTime() > recentThresh)
-        .length,
-    [dataLayer, target]
+  const recent = dataLayer
+    .getPriorHangoutsForTarget(target.id)
+    .filter(h => h.time.getTime() > recentThresh).length;
+
+  return {
+    id: target.id,
+    name: target.target.name,
+    prevDate: lastHang ? trimTimeFromDate(lastHang.time) : undefined,
+    nextDate: nextHang ? trimTimeFromDate(nextHang.time) : undefined,
+    recentHangs: recent,
+  };
+}
+
+function TargetRow({ data }: { data: RowData }) {
+  return (
+    <tr>
+      <th scope="row">{data.name}</th>
+      <td>{data.prevDate ? data.prevDate.toDateString() : 'Never'}</td>
+      <td>{data.nextDate ? data.nextDate.toDateString() : 'None'}</td>
+      <td>{data.recentHangs}</td>
+    </tr>
   );
+}
+
+function ColumnHeader({
+  title,
+  column,
+  primary,
+  secondary,
+  onToggleOrder,
+  onPromote,
+}: {
+  title: string;
+  column: ColumnKey;
+  primary: SortedColumn;
+  secondary: SortedColumn;
+  onToggleOrder: (col: ColumnKey) => void;
+  onPromote: (col: ColumnKey) => void;
+}) {
+  const isPrimary = column === primary.key;
+  const isSecondary = column === secondary.key;
+  const isAscending = isPrimary ? primary.ascending : isSecondary ? secondary.ascending : false;
+  const isArrowVisible = isPrimary || isSecondary;
+  const color = isPrimary ? 'rgb(94, 118, 255)' : 'rgba(94, 118, 255, 0.4)';
+  const Arrow = isAscending ? UpArrow : DownArrow;
 
   return (
-    <tr key={target.id}>
-      <th scope="row">{target.target.name}</th>
-      <td>{lastHang ? lastHang.time.toDateString() : 'Never'}</td>
-      <td>{nextHang ? nextHang.time.toDateString() : 'None'}</td>
-      <td>{recent}</td>
-    </tr>
+    <>
+      <div className="header-container">
+        <ButtonGhost className="header-title" onClick={() => onPromote(column)}>
+          {title}
+        </ButtonGhost>
+        <ButtonGhost
+          className="arrow-container"
+          onClick={() => onToggleOrder(column)}
+          style={{ opacity: isArrowVisible ? 1 : 0 }}
+        >
+          <Arrow size={16} color={color} />
+        </ButtonGhost>
+      </div>
+      <style jsx>{`
+        .header-container {
+          display: flex;
+          justify-content: flex-start;
+          align-items: center;
+        }
+        .header-title {
+          margin-right: 4px;
+        }
+      `}</style>
+    </>
   );
 }
 
 export function TargetTable({}: Props) {
   const dataLayer = useDataLayer();
   const targets = useMemo(() => dataLayer.getTargets(), [dataLayer]);
+  const rows = useMemo(() => targets.map(t => makeData(t, dataLayer)), [targets, dataLayer]);
+
+  const [primarySort, setPrimarySort] = useState<SortedColumn>({
+    key: 'prevDate',
+    ascending: true,
+  });
+  const [secondarySort, setSecondarySort] = useState<SortedColumn>({
+    key: 'nextDate',
+    ascending: false,
+  });
+
+  const toggleSortOrder = useCallback(
+    (column: ColumnKey) => {
+      if (column === primarySort.key) {
+        setPrimarySort({ ...primarySort, ascending: !primarySort.ascending });
+      } else if (column === secondarySort.key) {
+        setSecondarySort({ ...secondarySort, ascending: !secondarySort.ascending });
+      }
+    },
+    [primarySort, setPrimarySort, secondarySort, setSecondarySort]
+  );
+
+  const promoteSortColumn = useCallback(
+    (column: ColumnKey) => {
+      if (column !== primarySort.key) {
+        setPrimarySort({ key: column, ascending: true });
+        setSecondarySort(primarySort);
+      } else {
+        toggleSortOrder(column);
+      }
+    },
+    [primarySort, setPrimarySort, setSecondarySort, toggleSortOrder]
+  );
+
+  const sortedRows = useMemo(() => {
+    function compareKeys<T extends RowData[ColumnKey]>(a: T, b: T, ascending: boolean): number {
+      if (a === b || (a === undefined && b === undefined)) {
+        return 0;
+      }
+
+      // undefined always first
+      if (a === undefined) {
+        return -1;
+      }
+      if (b === undefined) {
+        return 1;
+      }
+
+      // special case strings
+      if (typeof a === 'string' && typeof b === 'string') {
+        const r = a.localeCompare(b);
+        return ascending ? r : -r;
+      }
+
+      // otherwise sort as normal
+      if (a < b) {
+        return ascending ? -1 : 1;
+      } else if (a > b) {
+        return ascending ? 1 : -1;
+      }
+      return 0;
+    }
+    return rows.sort((a: RowData, b: RowData) => {
+      const p = compareKeys(a[primarySort.key], b[primarySort.key], primarySort.ascending);
+      if (p !== 0) {
+        return p;
+      }
+      return compareKeys(a[secondarySort.key], b[secondarySort.key], secondarySort.ascending);
+    });
+  }, [rows, primarySort, secondarySort]);
 
   return (
     <>
       <table>
         <thead>
           <tr>
-            <th scope="col">People</th>
-            <th scope="col">Last seen</th>
-            <th scope="col">Next plans</th>
-            <th scope="col">Recent hangouts</th>
+            <th scope="col">
+              <ColumnHeader
+                title="People"
+                column="name"
+                primary={primarySort}
+                secondary={secondarySort}
+                onToggleOrder={toggleSortOrder}
+                onPromote={promoteSortColumn}
+              />
+            </th>
+            <th scope="col">
+              <ColumnHeader
+                title="Last seen"
+                column="prevDate"
+                primary={primarySort}
+                secondary={secondarySort}
+                onToggleOrder={toggleSortOrder}
+                onPromote={promoteSortColumn}
+              />
+            </th>
+            <th scope="col">
+              <ColumnHeader
+                title="Next hangout"
+                column="nextDate"
+                primary={primarySort}
+                secondary={secondarySort}
+                onToggleOrder={toggleSortOrder}
+                onPromote={promoteSortColumn}
+              />
+            </th>
+            <th scope="col">
+              <ColumnHeader
+                title="Recent hangouts"
+                column="recentHangs"
+                primary={primarySort}
+                secondary={secondarySort}
+                onToggleOrder={toggleSortOrder}
+                onPromote={promoteSortColumn}
+              />
+            </th>
           </tr>
         </thead>
         <tbody>
-          {targets.map(target => (
-            <TargetRow key={target.id} target={target} />
+          {sortedRows.map(row => (
+            <TargetRow key={row.id} data={row} />
           ))}
         </tbody>
       </table>
-      <style jsx>{`
-        
-      `}</style>
+      <style jsx>{``}</style>
     </>
   );
 }
