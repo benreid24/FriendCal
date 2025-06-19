@@ -5,7 +5,7 @@ import type { Target } from '../types/target';
 import type { DataLayer } from '../data/data_layer';
 import { UpArrow } from './icons/UpArrow';
 import { DownArrow } from './icons/DownArrow';
-import { ButtonGhost } from './ButtonGhost';
+import { ButtonGhost } from './Common/ButtonGhost';
 
 export interface Props {}
 
@@ -71,7 +71,7 @@ function ColumnHeader({
   const isSecondary = column === secondary.key;
   const isAscending = isPrimary ? primary.ascending : isSecondary ? secondary.ascending : false;
   const isArrowVisible = isPrimary || isSecondary;
-  const color = isPrimary ? 'rgb(94, 118, 255)' : 'rgba(94, 118, 255, 0.4)';
+  const color = isPrimary ? 'var(--button-primary)' : 'var(--button-secondary)';
   const Arrow = isAscending ? UpArrow : DownArrow;
 
   return (

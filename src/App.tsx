@@ -1,19 +1,25 @@
 import { TargetTable } from './components/TargetTable';
-import {useSetDataLayer} from './hooks/useDataLayer';
-import {useEffect} from 'react';
-import {DebugData} from './data/debug_data';
+import { useSetDataLayer } from './hooks/useDataLayer';
+import { useEffect } from 'react';
+import { DebugData } from './data/debug_data';
+import { ControlBar } from './components/ControlBar';
+import { useTheme } from './hooks/useTheme';
 
 function App() {
-    const setDataLayer = useSetDataLayer();
-    
-    useEffect(() => {
-        setDataLayer(new DebugData());
-    }, []);
+  const setDataLayer = useSetDataLayer();
+  useTheme();
+
+  useEffect(() => {
+    setDataLayer(new DebugData());
+  }, []);
 
   return (
     <>
       <div className="app">
-        <TargetTable />
+        <div className="content">
+          <ControlBar />
+          <TargetTable />
+        </div>
       </div>
       <style jsx>{`
         .app {
@@ -23,6 +29,8 @@ function App() {
           flex-direction: column;
           justify-content: center;
           align-items: center;
+        }
+        .content {
         }
       `}</style>
     </>
