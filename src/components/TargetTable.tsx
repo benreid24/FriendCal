@@ -90,9 +90,9 @@ function ColumnHeader({
         <ButtonGhost
           className="arrow-container"
           onClick={() => onToggleOrder(column)}
-          style={{ opacity: isArrowVisible ? 1 : 0 }}
+          style={{ opacity: isArrowVisible ? 1 : 0, paddingTop: '2px', marginBottom: '-2px' }}
         >
-          <Arrow size={16} color={color} />
+          <Arrow size={20} color={color} />
         </ButtonGhost>
       </div>
       <style jsx>{`
@@ -197,7 +197,7 @@ export function TargetTable({}: Props) {
           <tr>
             <th scope="col">
               <ColumnHeader
-                title="People"
+                title="People & Groups"
                 column="name"
                 primary={primarySort}
                 secondary={secondarySort}
