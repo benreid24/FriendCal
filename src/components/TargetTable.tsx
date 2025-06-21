@@ -1,11 +1,11 @@
 import { useCallback, useMemo, useState } from 'react';
-import { useDataLayer } from '../hooks/useDataLayer';
+import { useHangouts, useTargets } from '../hooks/useDataLayer';
 import { getRecentDate, trimTimeFromDate } from '../lib/time';
 import type { Target } from '../types/target';
-import type { DataLayer } from '../data/data_layer';
 import { UpArrow } from './icons/UpArrow';
 import { DownArrow } from './icons/DownArrow';
 import { ButtonGhost } from './Common/ButtonGhost';
+import { Text } from './Common/Text';
 
 export interface Props {}
 
@@ -24,13 +24,18 @@ interface SortedColumn {
   ascending: boolean;
 }
 
-function makeData(target: Target, dataLayer: DataLayer): RowData {
-  const lastHang = dataLayer.getLastHangout(target.id);
-  const nextHang = dataLayer.getNextHangout(target.id);
+function makeData(
+  target: Target,
+  getLastHangoutForTarget: ReturnType<typeof useHangouts>['getLastHangoutForTarget'],
+  getNextHangoutForTarget: ReturnType<typeof useHangouts>['getNextHangoutForTarget'],
+  getPriorHangoutsForTarget: ReturnType<typeof useHangouts>['getPriorHangoutsForTarget']
+): RowData {
+  const lastHang = getLastHangoutForTarget(target.id);
+  const nextHang = getNextHangoutForTarget(target.id);
   const recentThresh = getRecentDate().getTime();
-  const recent = dataLayer
-    .getPriorHangoutsForTarget(target.id)
-    .filter(h => h.time.getTime() > recentThresh).length;
+  const recent = getPriorHangoutsForTarget(target.id).filter(
+    h => h.time.getTime() > recentThresh
+  ).length;
 
   return {
     id: target.id,
@@ -78,7 +83,9 @@ function ColumnHeader({
     <>
       <div className="header-container">
         <ButtonGhost className="header-title" onClick={() => onPromote(column)}>
-          {title}
+          <Text weight="semibold" color="secondary">
+            {title}
+          </Text>
         </ButtonGhost>
         <ButtonGhost
           className="arrow-container"
@@ -103,9 +110,16 @@ function ColumnHeader({
 }
 
 export function TargetTable({}: Props) {
-  const dataLayer = useDataLayer();
-  const targets = useMemo(() => dataLayer.getTargets(), [dataLayer]);
-  const rows = useMemo(() => targets.map(t => makeData(t, dataLayer)), [targets, dataLayer]);
+  const { targets } = useTargets();
+  const { getLastHangoutForTarget, getNextHangoutForTarget, getPriorHangoutsForTarget } =
+    useHangouts();
+  const rows = useMemo(
+    () =>
+      targets.map(t =>
+        makeData(t, getLastHangoutForTarget, getNextHangoutForTarget, getPriorHangoutsForTarget)
+      ),
+    [targets, getLastHangoutForTarget, getNextHangoutForTarget, getPriorHangoutsForTarget]
+  );
 
   const [primarySort, setPrimarySort] = useState<SortedColumn>({
     key: 'prevDate',

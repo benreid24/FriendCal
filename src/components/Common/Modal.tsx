@@ -38,10 +38,10 @@ function ModalRoot({ children, open, onRequestClose }: ModalProps) {
           display: flex;
           justify-content: center;
           align-items: center;
+          z-index: 100;
         }
         .modal {
           min-width: 488px;
-          min-height: 300px;
           background-color: var(--background-accent);
           border-radius: 16px;
           padding: 24px;
@@ -72,6 +72,7 @@ function ModalTitle({ children }: { children: ReactNode }) {
       <style jsx>{`
         .modal-title {
           font-size: var(--font-size-large);
+          font-weight: var(--font-weight-semibold);
           margin-top: -8px;
           margin-bottom: 8px;
           max-width: 85%;
@@ -91,6 +92,9 @@ function ModalContent({ children }: { children: ReactNode }) {
       <style jsx>{`
         .modal-content {
           flex-grow: 1;
+          margin-bottom: 8px;
+          max-height: 300px;
+          overflow: auto;
         }
       `}</style>
     </>
@@ -108,6 +112,8 @@ function ModalActions({ children }: { children: ReactNode }) {
           justify-content: flex-end;
           align-items: center;
           gap: 8px;
+          margin-top: 4px;
+          margin-bottom: -8px;
         }
       `}</style>
     </>

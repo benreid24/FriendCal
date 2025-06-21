@@ -25,13 +25,15 @@ export function Button({
       </button>
       <style jsx>{`
         .button {
-          font-size: inherit;
           background-color: var(--button-${variant});
           border: 1px solid var(--border);
           border-radius: 8px;
-          padding: 4px 8px;
+          padding: 6px 8px;
           cursor: pointer;
           transition: background-color 0.2s ease;
+          font-size: var(--font-size);
+          font-weight: var(--font-weight);
+          color: var(--text);
         }
         .button:hover {
           box-shadow: 2px 2px 2px 0px var(--border);

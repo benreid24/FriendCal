@@ -11,6 +11,9 @@ export interface Theme {
   buttonPrimary: string;
   buttonSecondary: string;
   buttonDestructive: string;
+  fontWeight: string;
+  fontWeightSemibold: string;
+  fontWeightBold: string;
 }
 
 export const LightTheme: Theme = {
@@ -22,6 +25,9 @@ export const LightTheme: Theme = {
   buttonPrimary: '#007bff',
   buttonSecondary: '#6c757d',
   buttonDestructive: '#dc3545',
+  fontWeight: '400',
+  fontWeightSemibold: '650',
+  fontWeightBold: '800',
 };
 
 export const DarkTheme: Theme = {
@@ -31,8 +37,11 @@ export const DarkTheme: Theme = {
   text: '#f5f5f5',
   textError: '#ff6b6b',
   buttonPrimary: '#339af0',
-  buttonSecondary: '#adb5bd',
+  buttonSecondary: '#4b5e71',
   buttonDestructive: '#ff4d4f',
+  fontWeight: '400',
+  fontWeightSemibold: '650',
+  fontWeightBold: '800',
 };
 
 export const Themes = {

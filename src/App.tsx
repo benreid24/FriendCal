@@ -1,5 +1,5 @@
 import { TargetTable } from './components/TargetTable';
-import { useSetDataLayer } from './hooks/useDataLayer';
+import { useDataSync, useSetDataLayer } from './hooks/useDataLayer';
 import { useEffect } from 'react';
 import { DebugData } from './data/debug_data';
 import { ControlBar } from './components/ControlBar';
@@ -7,6 +7,7 @@ import { useTheme } from './hooks/useTheme';
 
 function App() {
   const setDataLayer = useSetDataLayer();
+  useDataSync();
   useTheme();
 
   useEffect(() => {
