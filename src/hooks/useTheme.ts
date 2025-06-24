@@ -7,6 +7,7 @@ export interface Theme {
   backgroundAccent: string;
   border: string;
   text: string;
+  textDisabled: string;
   textError: string;
   buttonPrimary: string;
   buttonSecondary: string;
@@ -21,6 +22,7 @@ export const LightTheme: Theme = {
   backgroundAccent: '#f4f6f8',
   border: '#d0d7de',
   text: '#1a1a1a',
+  textDisabled: '#3a3a3a',
   textError: '#d32f2f',
   buttonPrimary: '#007bff',
   buttonSecondary: '#6c757d',
@@ -35,6 +37,7 @@ export const DarkTheme: Theme = {
   backgroundAccent: '#1e1e1e',
   border: '#33393f',
   text: '#f5f5f5',
+  textDisabled: '#858585',
   textError: '#ff6b6b',
   buttonPrimary: '#339af0',
   buttonSecondary: '#4b5e71',

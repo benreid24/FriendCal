@@ -1,4 +1,4 @@
-import type { PropsWithChildren, ReactNode } from 'react';
+import type { CSSProperties, PropsWithChildren, ReactNode } from 'react';
 import { ButtonGhost } from './ButtonGhost';
 import CloseIcon from '../icons/CloseIcon';
 
@@ -85,10 +85,12 @@ function ModalTitle({ children }: { children: ReactNode }) {
   );
 }
 
-function ModalContent({ children }: { children: ReactNode }) {
+function ModalContent({ children, style }: { children: ReactNode; style?: CSSProperties }) {
   return (
     <>
-      <div className="modal-content">{children}</div>
+      <div className="modal-content" style={style}>
+        {children}
+      </div>
       <style jsx>{`
         .modal-content {
           flex-grow: 1;
